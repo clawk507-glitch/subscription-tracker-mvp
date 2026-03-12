@@ -14,6 +14,7 @@ Simple, fast, private. Track all your subscriptions in one place and see exactly
 ✅ Privacy-first (RLS on all data)
 ✅ No password required
 ✅ Works offline-first, syncs when online
+✅ Ready for production deployment
 
 ---
 
