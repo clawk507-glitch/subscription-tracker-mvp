@@ -70,7 +70,7 @@
     async function checkExisting() {
       try {
         const { data: { user } } = await db.auth.getUser();
-        if (user) window.location.href = '/dashboard.html';
+        if (user) window.location.href = 'https://clawk507-glitch.github.io/subscription-tracker-mvp/dashboard.html';
       } catch (err) {
         console.log('Auth check:', err.message);
       }
