@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>snip — Your Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
   <style>
     :root {
       --snip-black: #0C0C0C;
@@ -22,6 +21,9 @@
     }
 
     * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
       font-family: 'Geist', system-ui, -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
@@ -29,6 +31,26 @@
     body {
       background: var(--snip-fog);
       color: var(--snip-black);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .snip-container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .snip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .snip-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .snip-icon {
@@ -37,7 +59,16 @@
       align-items: center;
       justify-content: center;
       border-radius: 8px;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
+    }
+
+    .snip-logo-text {
+      font-weight: 900;
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+      color: var(--snip-black);
     }
 
     .snip-label {
@@ -46,16 +77,29 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--snip-light);
-    }
-
-    .snip-rule {
-      border: 1px solid var(--snip-rule);
+      margin-bottom: 0.75rem;
+      display: block;
     }
 
     .snip-card {
       background: var(--snip-white);
       border-radius: 10px;
-      padding: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .snip-total {
+      font-family: 'Geist Mono', monospace;
+      font-weight: 900;
+      font-size: 2.5rem;
+      letter-spacing: -0.04em;
+      color: var(--snip-black);
+      margin-bottom: 0.25rem;
+    }
+
+    .snip-total-meta {
+      font-size: 0.75rem;
+      color: var(--snip-light);
     }
 
     .snip-btn {
@@ -88,6 +132,8 @@
       background: transparent;
       color: var(--snip-blue);
       border: 1px solid var(--snip-rule);
+      padding: 8px 14px;
+      font-size: 12px;
     }
 
     .snip-btn-delete {
@@ -97,6 +143,11 @@
       padding: 6px 10px;
       font-size: 12px;
       cursor: pointer;
+      transition: opacity 150ms ease;
+    }
+
+    .snip-btn-delete:hover {
+      opacity: 0.7;
     }
 
     .snip-input {
@@ -121,6 +172,16 @@
       color: var(--snip-light);
     }
 
+    .snip-form-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .snip-form-row .snip-input {
+      flex: 1;
+    }
+
     .snip-row {
       display: flex;
       align-items: center;
@@ -130,121 +191,160 @@
       border-radius: 8px;
       gap: 12px;
       transition: background 150ms ease;
+      margin-bottom: 0.5rem;
     }
 
     .snip-row:hover {
       background: var(--snip-fog);
     }
 
-    .snip-row-alert {
-      border-left: 3px solid var(--snip-alert);
-      background: var(--snip-alert-pale);
+    .snip-row-content {
+      flex: 1;
+      min-width: 0;
     }
 
     .snip-row-name {
       font-weight: 600;
       font-size: 13px;
       margin-bottom: 2px;
+      word-break: break-word;
     }
 
     .snip-row-meta {
       font-size: 11px;
       color: var(--snip-light);
-    }
-
-    .snip-badge {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      padding: 3px 7px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .snip-badge-alert {
-      background: var(--snip-alert-pale);
-      color: var(--snip-alert);
-    }
-
-    .mono {
       font-family: 'Geist Mono', monospace;
+    }
+
+    .snip-error {
+      font-size: 0.75rem;
+      color: var(--snip-alert);
+      min-height: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .snip-empty {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--snip-light);
+      padding: 2rem 1rem;
+    }
+
+    .snip-loading {
+      text-align: center;
+      padding: 2.5rem 1.25rem;
+      color: var(--snip-mid);
+    }
+
+    .mb-3 {
+      margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0.75rem;
+      }
+
+      .snip-card {
+        padding: 1.25rem;
+      }
+
+      .snip-total {
+        font-size: 2rem;
+      }
+
+      .snip-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .snip-logo-text {
+        font-size: 1.125rem;
+      }
+
+      .snip-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .snip-form-row {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .snip-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen p-4" style="background: var(--snip-fog);">
-  <div class="max-w-2xl mx-auto">
+<body>
+  <div class="snip-container">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-3">
-        <div class="snip-icon" style="width: 36px; height: 36px;">
+    <div class="snip-header">
+      <div class="snip-logo">
+        <div class="snip-icon">
           <svg width="20" height="20" viewBox="0 0 72 72" fill="none">
             <path d="M48 22C43 17 36 17 36 17C27.5 17 23 22 23 28C23 34 27.5 37 36 38.5C44.5 40 49 43 49 49C49 55 44.5 59 36 59C28.5 59 23 54 23 54" 
                   stroke="white" stroke-width="5.5" stroke-linecap="round"/>
             <line x1="10" y1="44" x2="62" y2="28" stroke="#0057FF" stroke-width="4.5" stroke-linecap="round"/>
           </svg>
         </div>
-        <h1 class="text-xl font-black tracking-tight" style="color: var(--snip-black); letter-spacing: -0.03em;">snip</h1>
+        <h1 class="snip-logo-text">snip</h1>
       </div>
-      <button 
-        onclick="logout()" 
-        class="snip-btn snip-btn-secondary"
-        style="padding: 8px 14px; font-size: 12px;">
+      <button onclick="logout()" class="snip-btn snip-btn-secondary">
         Logout
       </button>
     </div>
 
     <!-- Loading State -->
-    <div id="loading" class="snip-card mb-6 text-center" style="padding: 40px 20px;">
-      <p style="color: var(--snip-mid);">Loading your dashboard...</p>
+    <div id="loading" class="snip-card">
+      <div class="snip-loading">Loading your dashboard...</div>
     </div>
 
     <!-- Main Content -->
     <div id="content" style="display: none;">
       <!-- Total Spend Card -->
-      <div class="snip-card mb-6">
-        <div class="snip-label mb-3">Monthly Spend</div>
-        <div class="text-4xl font-black tracking-tight mb-1 mono" style="color: var(--snip-black); letter-spacing: -0.04em;">
+      <div class="snip-card">
+        <div class="snip-label">Monthly Spend</div>
+        <div class="snip-total">
           <span id="total">0.00€</span>
         </div>
-        <p class="text-xs" style="color: var(--snip-light);" id="total-meta">0 active subscriptions</p>
+        <p class="snip-total-meta" id="total-meta">0 active subscriptions</p>
       </div>
 
       <!-- Add Subscription -->
-      <div class="snip-card mb-6">
-        <div class="snip-label mb-4">Add subscription</div>
-        <div class="space-y-3">
+      <div class="snip-card">
+        <div class="snip-label">Add subscription</div>
+        <input 
+          type="text" 
+          id="name" 
+          placeholder="Netflix, Spotify, etc." 
+          class="snip-input"
+          autocomplete="off">
+        <div class="snip-form-row">
           <input 
-            type="text" 
-            id="name" 
-            placeholder="Netflix, Spotify, etc." 
+            type="number" 
+            id="price" 
+            placeholder="9.99" 
+            step="0.01" 
+            min="0.01"
             class="snip-input"
             autocomplete="off">
-          <div class="flex gap-2">
-            <input 
-              type="number" 
-              id="price" 
-              placeholder="9.99" 
-              step="0.01" 
-              min="0.01"
-              class="snip-input flex-1"
-              autocomplete="off">
-            <button 
-              id="addBtn" 
-              onclick="addSub()" 
-              class="snip-btn"
-              style="padding: 11px 24px;">
-              Add
-            </button>
-          </div>
-          <p id="addError" class="text-xs" style="color: var(--snip-alert); min-height: 16px;"></p>
+          <button 
+            id="addBtn" 
+            onclick="addSub()" 
+            class="snip-btn">
+            Add
+          </button>
         </div>
+        <p id="addError" class="snip-error"></p>
       </div>
 
       <!-- Subscriptions List -->
       <div>
         <div class="snip-label mb-3">Your subscriptions</div>
-        <div id="list" class="space-y-2"></div>
-        <p id="empty" class="text-center text-sm" style="color: var(--snip-light); padding: 32px 16px;">
+        <div id="list"></div>
+        <p id="empty" class="snip-empty">
           No subscriptions yet. Add one above to get started.
         </p>
       </div>
@@ -345,9 +445,9 @@
             total += sub.price;
             html += `
               <div class="snip-row">
-                <div class="flex-1">
+                <div class="snip-row-content">
                   <div class="snip-row-name">${escapeHtml(sub.name)}</div>
-                  <div class="snip-row-meta mono">${sub.price.toFixed(2)}€ / month</div>
+                  <div class="snip-row-meta">${sub.price.toFixed(2)}€ / month</div>
                 </div>
                 <button 
                   onclick="deleteSub('${sub.id}')" 

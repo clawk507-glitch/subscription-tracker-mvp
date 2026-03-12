@@ -27,6 +27,16 @@
     body {
       background: var(--snip-fog);
       color: var(--snip-black);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .snip-container {
+      width: 100%;
+      max-width: 400px;
     }
 
     .snip-icon {
@@ -35,6 +45,33 @@
       align-items: center;
       justify-content: center;
       border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .snip-logo-text {
+      font-weight: 900;
+      font-size: 1.25rem;
+      letter-spacing: -0.025em;
+      color: var(--snip-black);
+    }
+
+    .snip-heading {
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--snip-black);
+      margin-bottom: 0.5rem;
+    }
+
+    .snip-subheading {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--snip-mid);
+      max-width: 280px;
+      margin: 0 auto;
     }
 
     .snip-label {
@@ -43,10 +80,16 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--snip-light);
+      display: block;
+      margin-bottom: 0.5rem;
     }
 
-    .snip-rule {
+    .snip-card {
+      background: var(--snip-white);
       border: 1px solid var(--snip-rule);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .snip-btn {
@@ -63,6 +106,7 @@
       border: none;
       cursor: pointer;
       transition: all 150ms ease;
+      width: 100%;
     }
 
     .snip-btn:hover:not(:disabled) {
@@ -85,6 +129,7 @@
       color: var(--snip-black);
       font-family: inherit;
       transition: border-color 150ms ease;
+      margin-bottom: 1rem;
     }
 
     .snip-input:focus {
@@ -100,9 +145,10 @@
     .snip-message {
       font-size: 13px;
       text-align: center;
-      padding: 8px 0;
+      padding: 0.5rem 0;
       min-height: 20px;
       line-height: 1.5;
+      margin-top: 0.75rem;
     }
 
     .snip-message.success {
@@ -112,53 +158,88 @@
     .snip-message.error {
       color: var(--snip-alert);
     }
+
+    .snip-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      color: var(--snip-light);
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mb-8 {
+      margin-bottom: 2rem;
+    }
+
+    .mb-6 {
+      margin-bottom: 1.5rem;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-sm">
+<body>
+  <div class="snip-container">
     <!-- Logo + Heading -->
     <div class="mb-8 text-center">
       <div class="flex items-center justify-center gap-2 mb-6">
-        <div class="snip-icon" style="width: 36px; height: 36px;">
+        <div class="snip-icon">
           <svg width="20" height="20" viewBox="0 0 72 72" fill="none">
             <path d="M48 22C43 17 36 17 36 17C27.5 17 23 22 23 28C23 34 27.5 37 36 38.5C44.5 40 49 43 49 49C49 55 44.5 59 36 59C28.5 59 23 54 23 54" 
                   stroke="white" stroke-width="5.5" stroke-linecap="round"/>
             <line x1="10" y1="44" x2="62" y2="28" stroke="#0057FF" stroke-width="4.5" stroke-linecap="round"/>
           </svg>
         </div>
-        <span class="font-black text-xl tracking-tight" style="color: var(--snip-black);">snip</span>
+        <span class="snip-logo-text">snip</span>
       </div>
-      <h1 class="text-2xl font-black tracking-tight mb-2" style="color: var(--snip-black); letter-spacing: -0.03em;">
+      <h1 class="snip-heading">
         Stop paying.<br>Start saving.
       </h1>
-      <p class="text-sm" style="color: var(--snip-mid); line-height: 1.6; max-width: 280px; margin: 0 auto;">
+      <p class="snip-subheading">
         One snip a week. That's all it takes to cut subscriptions you don't use.
       </p>
     </div>
 
     <!-- Form -->
-    <div class="snip-rule rounded-lg p-6 mb-4" style="background: var(--snip-white);">
-      <label class="snip-label mb-2 block">Email address</label>
+    <div class="snip-card">
+      <label class="snip-label">Email address</label>
       <input 
         type="email" 
         id="email" 
         placeholder="you@example.com" 
-        class="snip-input mb-4"
+        class="snip-input"
         autocomplete="email">
 
       <button 
         id="loginBtn" 
         onclick="sendMagicLink()" 
-        class="snip-btn w-full">
+        class="snip-btn">
         Send Magic Link
       </button>
 
-      <div id="message" class="snip-message success mt-3" style="display: none;"></div>
-      <div id="error" class="snip-message error mt-3" style="display: none;"></div>
+      <div id="message" class="snip-message success" style="display: none;"></div>
+      <div id="error" class="snip-message error" style="display: none;"></div>
     </div>
 
     <!-- Footer info -->
-    <div class="text-center text-xs" style="color: var(--snip-light); line-height: 1.6;">
+    <div class="snip-footer">
       We'll send you a secure link to log in.<br>
       No password needed.
     </div>
