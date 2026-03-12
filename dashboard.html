@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Subscription Tracker</title>
+  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-4xl font-bold">Subscriptions</h1>
+      <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
+        Logout
+      </button>
+    </div>
+
+    <div id="loading" class="bg-gray-800 p-6 rounded-lg mb-8 text-center">
+      <p class="text-gray-400">Loading...</p>
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="bg-gray-800 p-6 rounded-lg mb-8">
+        <p class="text-gray-400 text-lg">Total Monthly Spend</p>
+        <p class="text-5xl font-bold mt-2" id="total">$0.00</p>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg mb-8">
+        <h2 class="text-xl font-semibold mb-4">Add Subscription</h2>
+        <input type="text" id="name" placeholder="Netflix" 
+               class="w-full p-3 mb-3 bg-gray-700 rounded text-white placeholder-gray-400">
+        <input type="number" id="price" placeholder="12.99" step="0.01" min="0.01"
+               class="w-full p-3 mb-4 bg-gray-700 rounded text-white placeholder-gray-400">
+        <button id="addBtn" onclick="addSub()" 
+                class="w-full bg-green-600 hover:bg-green-700 p-3 rounded font-semibold disabled:opacity-50">
+          Add Subscription
+        </button>
+        <p id="addError" class="mt-2 text-sm text-red-400"></p>
+      </div>
+
+      <div id="list" class="space-y-3"></div>
+      <p id="empty" class="text-gray-400 text-center mt-8">No subscriptions yet.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+    let currentUser = null;
+
+    async function checkAuth() {
+      try {
+        const { data: { user }, error } = await db.auth.getUser();
+        
+        if (error || !user) {
+          window.location.href = '/index.html';
+          return null;
+        }
+        
+        currentUser = user;
+        return user;
+      } catch (err) {
+        console.error('Auth error:', err);
+        window.location.href = '/index.html';
+        return null;
+      }
+    }
+
+    async function addSub() {
+      const name = document.getElementById('name').value.trim();
+      const price = parseFloat(document.getElementById('price').value);
+      const btn = document.getElementById('addBtn');
+      const errorEl = document.getElementById('addError');
+
+      errorEl.textContent = '';
+
+      if (!name) {
+        errorEl.textContent = 'Name required';
+        return;
+      }
+
+      if (isNaN(price) || price <= 0) {
+        errorEl.textContent = 'Price must be > 0';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Adding...';
+
+      try {
+        const { error } = await db.from('subscriptions').insert([
+          { user_id: currentUser.id, name, price }
+        ]);
+
+        if (error) {
+          errorEl.textContent = 'Error: ' + error.message;
+        } else {
+          document.getElementById('name').value = '';
+          document.getElementById('price').value = '';
+          await loadSubs();
+        }
+      } catch (err) {
+        errorEl.textContent = 'Error adding subscription';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add Subscription';
+      }
+    }
+
+    async function loadSubs() {
+      try {
+        const { data, error } = await db
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Load error:', error);
+          document.getElementById('empty').textContent = 'Error loading subscriptions';
+          return;
+        }
+
+        let total = 0;
+        let html = '';
+
+        if (data.length === 0) {
+          document.getElementById('empty').style.display = 'block';
+          document.getElementById('list').innerHTML = '';
+        } else {
+          document.getElementById('empty').style.display = 'none';
+          data.forEach(sub => {
+            total += sub.price;
+            html += `
+              <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
+                <div>
+                  <span class="text-lg font-medium">${escapeHtml(sub.name)}</span>
+                  <span class="text-gray-400 ml-4">$${sub.price.toFixed(2)}/mo</span>
+                </div>
+                <button onclick="deleteSub('${sub.id}')" 
+                        class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+                  Delete
+                </button>
+              </div>
+            `;
+          });
+          document.getElementById('list').innerHTML = html;
+        }
+
+        document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('empty').textContent = 'Error loading subscriptions';
+      }
+    }
+
+    async function deleteSub(id) {
+      if (!confirm('Delete this subscription?')) return;
+
+      try {
+        const { error } = await db.from('subscriptions').delete().eq('id', id);
+
+        if (error) {
+          alert('Error: ' + error.message);
+        } else {
+          await loadSubs();
+        }
+      } catch (err) {
+        alert('Error deleting subscription');
+      }
+    }
+
+    async function logout() {
+      try {
+        await db.auth.signOut();
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
+      window.location.href = '/index.html';
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    async function init() {
+      const user = await checkAuth();
+      if (user) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        await loadSubs();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

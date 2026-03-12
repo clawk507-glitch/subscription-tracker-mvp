@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Tracker</title>
+  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+  <div class="w-96 p-8 bg-gray-800 rounded-lg">
+    <h1 class="text-3xl font-bold mb-6">Track Subscriptions</h1>
+    <input type="email" id="email" placeholder="your@email.com" 
+           class="w-full p-3 mb-4 bg-gray-700 rounded text-white placeholder-gray-400">
+    <button id="loginBtn" onclick="sendMagicLink()" 
+            class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-semibold disabled:opacity-50">
+      Send Magic Link
+    </button>
+    <p id="message" class="mt-4 text-sm text-green-400 text-center"></p>
+    <p id="error" class="mt-4 text-sm text-red-400 text-center"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function sendMagicLink() {
+      const email = document.getElementById('email').value.trim();
+      const btn = document.getElementById('loginBtn');
+      
+      document.getElementById('error').textContent = '';
+      document.getElementById('message').textContent = '';
+
+      if (!email || !validateEmail(email)) {
+        document.getElementById('error').textContent = 'Please enter a valid email';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const { error } = await db.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin + '/dashboard.html'
+          }
+        });
+
+        if (error) {
+          document.getElementById('error').textContent = error.message;
+        } else {
+          document.getElementById('message').textContent = 'Check your email!';
+          document.getElementById('email').value = '';
+        }
+      } catch (err) {
+        document.getElementById('error').textContent = 'Error sending link. Try again.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Magic Link';
+      }
+    }
+
+    async function checkExisting() {
+      try {
+        const { data: { user } } = await db.auth.getUser();
+        if (user) window.location.href = '/dashboard.html';
+      } catch (err) {
+        console.log('Auth check:', err.message);
+      }
+    }
+
+    checkExisting();
+  </script>
+</body>
+</html>
