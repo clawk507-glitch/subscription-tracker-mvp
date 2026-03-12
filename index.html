@@ -175,7 +175,7 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
-    function showMessage(elementId, text, isError = false) {
+    function showMessage(elementId, text) {
       const el = document.getElementById(elementId);
       el.textContent = text;
       el.style.display = text ? 'block' : 'none';

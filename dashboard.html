@@ -96,6 +96,7 @@
       border: none;
       padding: 6px 10px;
       font-size: 12px;
+      cursor: pointer;
     }
 
     .snip-input {
@@ -128,6 +129,7 @@
       border: 1px solid var(--snip-rule);
       border-radius: 8px;
       gap: 12px;
+      transition: background 150ms ease;
     }
 
     .snip-row:hover {
@@ -185,7 +187,7 @@
       </div>
       <button 
         onclick="logout()" 
-        class="snip-btn-secondary snip-btn"
+        class="snip-btn snip-btn-secondary"
         style="padding: 8px 14px; font-size: 12px;">
         Logout
       </button>
@@ -202,7 +204,7 @@
       <div class="snip-card mb-6">
         <div class="snip-label mb-3">Monthly Spend</div>
         <div class="text-4xl font-black tracking-tight mb-1 mono" style="color: var(--snip-black); letter-spacing: -0.04em;">
-          <span id="total">€0.00</span>
+          <span id="total">0.00€</span>
         </div>
         <p class="text-xs" style="color: var(--snip-light);" id="total-meta">0 active subscriptions</p>
       </div>
