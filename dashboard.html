@@ -3,43 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Subscription Tracker</title>
+  <title>snip — Your Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+  <style>
+    :root {
+      --snip-black: #0C0C0C;
+      --snip-blue: #0057FF;
+      --snip-white: #FFFFFF;
+      --snip-fog: #F5F5F3;
+      --snip-rule: #E8E8E5;
+      --snip-mid: #5A5A5A;
+      --snip-light: #9A9A9A;
+      --snip-alert: #FF3B30;
+      --snip-alert-pale: #FFF0EE;
+      --snip-save: #00B87A;
+      --snip-save-pale: #EDFAF4;
+    }
+
+    * {
+      font-family: 'Geist', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--snip-fog);
+      color: var(--snip-black);
+    }
+
+    .snip-icon {
+      background: var(--snip-black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .snip-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--snip-light);
+    }
+
+    .snip-rule {
+      border: 1px solid var(--snip-rule);
+    }
+
+    .snip-card {
+      background: var(--snip-white);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .snip-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--snip-blue);
+      color: var(--snip-white);
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .snip-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .snip-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .snip-btn-secondary {
+      background: transparent;
+      color: var(--snip-blue);
+      border: 1px solid var(--snip-rule);
+    }
+
+    .snip-btn-delete {
+      background: transparent;
+      color: var(--snip-alert);
+      border: none;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .snip-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--snip-white);
+      border: 1px solid var(--snip-rule);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--snip-black);
+      font-family: inherit;
+      transition: border-color 150ms ease;
+    }
+
+    .snip-input:focus {
+      outline: none;
+      border-color: var(--snip-blue);
+      box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.08);
+    }
+
+    .snip-input::placeholder {
+      color: var(--snip-light);
+    }
+
+    .snip-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--snip-rule);
+      border-radius: 8px;
+      gap: 12px;
+    }
+
+    .snip-row:hover {
+      background: var(--snip-fog);
+    }
+
+    .snip-row-alert {
+      border-left: 3px solid var(--snip-alert);
+      background: var(--snip-alert-pale);
+    }
+
+    .snip-row-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .snip-row-meta {
+      font-size: 11px;
+      color: var(--snip-light);
+    }
+
+    .snip-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 7px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .snip-badge-alert {
+      background: var(--snip-alert-pale);
+      color: var(--snip-alert);
+    }
+
+    .mono {
+      font-family: 'Geist Mono', monospace;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-8">
+<body class="min-h-screen p-4" style="background: var(--snip-fog);">
   <div class="max-w-2xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-4xl font-bold">Subscriptions</h1>
-      <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-3">
+        <div class="snip-icon" style="width: 36px; height: 36px;">
+          <svg width="20" height="20" viewBox="0 0 72 72" fill="none">
+            <path d="M48 22C43 17 36 17 36 17C27.5 17 23 22 23 28C23 34 27.5 37 36 38.5C44.5 40 49 43 49 49C49 55 44.5 59 36 59C28.5 59 23 54 23 54" 
+                  stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+            <line x1="10" y1="44" x2="62" y2="28" stroke="#0057FF" stroke-width="4.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="text-xl font-black tracking-tight" style="color: var(--snip-black); letter-spacing: -0.03em;">snip</h1>
+      </div>
+      <button 
+        onclick="logout()" 
+        class="snip-btn-secondary snip-btn"
+        style="padding: 8px 14px; font-size: 12px;">
         Logout
       </button>
     </div>
 
-    <div id="loading" class="bg-gray-800 p-6 rounded-lg mb-8 text-center">
-      <p class="text-gray-400">Loading...</p>
+    <!-- Loading State -->
+    <div id="loading" class="snip-card mb-6 text-center" style="padding: 40px 20px;">
+      <p style="color: var(--snip-mid);">Loading your dashboard...</p>
     </div>
 
+    <!-- Main Content -->
     <div id="content" style="display: none;">
-      <div class="bg-gray-800 p-6 rounded-lg mb-8">
-        <p class="text-gray-400 text-lg">Total Monthly Spend</p>
-        <p class="text-5xl font-bold mt-2" id="total">$0.00</p>
+      <!-- Total Spend Card -->
+      <div class="snip-card mb-6">
+        <div class="snip-label mb-3">Monthly Spend</div>
+        <div class="text-4xl font-black tracking-tight mb-1 mono" style="color: var(--snip-black); letter-spacing: -0.04em;">
+          <span id="total">€0.00</span>
+        </div>
+        <p class="text-xs" style="color: var(--snip-light);" id="total-meta">0 active subscriptions</p>
       </div>
 
-      <div class="bg-gray-800 p-6 rounded-lg mb-8">
-        <h2 class="text-xl font-semibold mb-4">Add Subscription</h2>
-        <input type="text" id="name" placeholder="Netflix" 
-               class="w-full p-3 mb-3 bg-gray-700 rounded text-white placeholder-gray-400">
-        <input type="number" id="price" placeholder="12.99" step="0.01" min="0.01"
-               class="w-full p-3 mb-4 bg-gray-700 rounded text-white placeholder-gray-400">
-        <button id="addBtn" onclick="addSub()" 
-                class="w-full bg-green-600 hover:bg-green-700 p-3 rounded font-semibold disabled:opacity-50">
-          Add Subscription
-        </button>
-        <p id="addError" class="mt-2 text-sm text-red-400"></p>
+      <!-- Add Subscription -->
+      <div class="snip-card mb-6">
+        <div class="snip-label mb-4">Add subscription</div>
+        <div class="space-y-3">
+          <input 
+            type="text" 
+            id="name" 
+            placeholder="Netflix, Spotify, etc." 
+            class="snip-input"
+            autocomplete="off">
+          <div class="flex gap-2">
+            <input 
+              type="number" 
+              id="price" 
+              placeholder="9.99" 
+              step="0.01" 
+              min="0.01"
+              class="snip-input flex-1"
+              autocomplete="off">
+            <button 
+              id="addBtn" 
+              onclick="addSub()" 
+              class="snip-btn"
+              style="padding: 11px 24px;">
+              Add
+            </button>
+          </div>
+          <p id="addError" class="text-xs" style="color: var(--snip-alert); min-height: 16px;"></p>
+        </div>
       </div>
 
-      <div id="list" class="space-y-3"></div>
-      <p id="empty" class="text-gray-400 text-center mt-8">No subscriptions yet.</p>
+      <!-- Subscriptions List -->
+      <div>
+        <div class="snip-label mb-3">Your subscriptions</div>
+        <div id="list" class="space-y-2"></div>
+        <p id="empty" class="text-center text-sm" style="color: var(--snip-light); padding: 32px 16px;">
+          No subscriptions yet. Add one above to get started.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -54,17 +260,17 @@
     async function checkAuth() {
       try {
         const { data: { user }, error } = await db.auth.getUser();
-        
+
         if (error || !user) {
           window.location.href = 'https://clawk507-glitch.github.io/subscription-tracker-mvp/index.html';
           return null;
         }
-        
+
         currentUser = user;
         return user;
       } catch (err) {
         console.error('Auth error:', err);
-        window.location.href = '/index.html';
+        window.location.href = 'https://clawk507-glitch.github.io/subscription-tracker-mvp/index.html';
         return null;
       }
     }
@@ -78,16 +284,17 @@
       errorEl.textContent = '';
 
       if (!name) {
-        errorEl.textContent = 'Name required';
+        errorEl.textContent = 'Subscription name required';
         return;
       }
 
       if (isNaN(price) || price <= 0) {
-        errorEl.textContent = 'Price must be > 0';
+        errorEl.textContent = 'Price must be greater than 0';
         return;
       }
 
       btn.disabled = true;
+      const originalText = btn.textContent;
       btn.textContent = 'Adding...';
 
       try {
@@ -106,7 +313,7 @@
         errorEl.textContent = 'Error adding subscription';
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Add Subscription';
+        btn.textContent = originalText;
       }
     }
 
@@ -135,14 +342,16 @@
           data.forEach(sub => {
             total += sub.price;
             html += `
-              <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
-                <div>
-                  <span class="text-lg font-medium">${escapeHtml(sub.name)}</span>
-                  <span class="text-gray-400 ml-4">$${sub.price.toFixed(2)}/mo</span>
+              <div class="snip-row">
+                <div class="flex-1">
+                  <div class="snip-row-name">${escapeHtml(sub.name)}</div>
+                  <div class="snip-row-meta mono">${sub.price.toFixed(2)}€ / month</div>
                 </div>
-                <button onclick="deleteSub('${sub.id}')" 
-                        class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
-                  Delete
+                <button 
+                  onclick="deleteSub('${sub.id}')" 
+                  class="snip-btn-delete"
+                  title="Delete">
+                  ✕
                 </button>
               </div>
             `;
@@ -150,7 +359,8 @@
           document.getElementById('list').innerHTML = html;
         }
 
-        document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('total').textContent = total.toFixed(2) + '€';
+        document.getElementById('total-meta').textContent = data.length + ' active subscription' + (data.length !== 1 ? 's' : '');
       } catch (err) {
         console.error('Load error:', err);
         document.getElementById('empty').textContent = 'Error loading subscriptions';

@@ -3,26 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscription Tracker</title>
+  <title>snip — Stop paying for what you don't use</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+  <style>
+    :root {
+      --snip-black: #0C0C0C;
+      --snip-blue: #0057FF;
+      --snip-white: #FFFFFF;
+      --snip-fog: #F5F5F3;
+      --snip-rule: #E8E8E5;
+      --snip-mid: #5A5A5A;
+      --snip-light: #9A9A9A;
+      --snip-alert: #FF3B30;
+      --snip-save: #00B87A;
+    }
+
+    * {
+      font-family: 'Geist', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--snip-fog);
+      color: var(--snip-black);
+    }
+
+    .snip-icon {
+      background: var(--snip-black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .snip-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--snip-light);
+    }
+
+    .snip-rule {
+      border: 1px solid var(--snip-rule);
+    }
+
+    .snip-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--snip-blue);
+      color: var(--snip-white);
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .snip-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .snip-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .snip-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--snip-white);
+      border: 1px solid var(--snip-rule);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--snip-black);
+      font-family: inherit;
+      transition: border-color 150ms ease;
+    }
+
+    .snip-input:focus {
+      outline: none;
+      border-color: var(--snip-blue);
+      box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.08);
+    }
+
+    .snip-input::placeholder {
+      color: var(--snip-light);
+    }
+
+    .snip-message {
+      font-size: 13px;
+      text-align: center;
+      padding: 8px 0;
+      min-height: 20px;
+      line-height: 1.5;
+    }
+
+    .snip-message.success {
+      color: var(--snip-save);
+    }
+
+    .snip-message.error {
+      color: var(--snip-alert);
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-  <div class="w-96 p-8 bg-gray-800 rounded-lg">
-    <h1 class="text-3xl font-bold mb-6">Track Subscriptions</h1>
-    <input type="email" id="email" placeholder="your@email.com" 
-           class="w-full p-3 mb-4 bg-gray-700 rounded text-white placeholder-gray-400">
-    <button id="loginBtn" onclick="sendMagicLink()" 
-            class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-semibold disabled:opacity-50">
-      Send Magic Link
-    </button>
-    <p id="message" class="mt-4 text-sm text-green-400 text-center"></p>
-    <p id="error" class="mt-4 text-sm text-red-400 text-center"></p>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+    <!-- Logo + Heading -->
+    <div class="mb-8 text-center">
+      <div class="flex items-center justify-center gap-2 mb-6">
+        <div class="snip-icon" style="width: 36px; height: 36px;">
+          <svg width="20" height="20" viewBox="0 0 72 72" fill="none">
+            <path d="M48 22C43 17 36 17 36 17C27.5 17 23 22 23 28C23 34 27.5 37 36 38.5C44.5 40 49 43 49 49C49 55 44.5 59 36 59C28.5 59 23 54 23 54" 
+                  stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+            <line x1="10" y1="44" x2="62" y2="28" stroke="#0057FF" stroke-width="4.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="font-black text-xl tracking-tight" style="color: var(--snip-black);">snip</span>
+      </div>
+      <h1 class="text-2xl font-black tracking-tight mb-2" style="color: var(--snip-black); letter-spacing: -0.03em;">
+        Stop paying.<br>Start saving.
+      </h1>
+      <p class="text-sm" style="color: var(--snip-mid); line-height: 1.6; max-width: 280px; margin: 0 auto;">
+        One snip a week. That's all it takes to cut subscriptions you don't use.
+      </p>
+    </div>
+
+    <!-- Form -->
+    <div class="snip-rule rounded-lg p-6 mb-4" style="background: var(--snip-white);">
+      <label class="snip-label mb-2 block">Email address</label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="you@example.com" 
+        class="snip-input mb-4"
+        autocomplete="email">
+
+      <button 
+        id="loginBtn" 
+        onclick="sendMagicLink()" 
+        class="snip-btn w-full">
+        Send Magic Link
+      </button>
+
+      <div id="message" class="snip-message success mt-3" style="display: none;"></div>
+      <div id="error" class="snip-message error mt-3" style="display: none;"></div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="text-center text-xs" style="color: var(--snip-light); line-height: 1.6;">
+      We'll send you a secure link to log in.<br>
+      No password needed.
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const db = supabase.createClient(
-      'https://nqzxdusspiuxwbtaqtay.supabase.co',
+      'https://nqzxdusspliuxwbtaqtay.supabase.co',
       'sb_publishable_VuyHxJPvQxRkDL_v9u5scQ_UMh1Nfa3'
     );
 
@@ -30,19 +175,28 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
+    function showMessage(elementId, text, isError = false) {
+      const el = document.getElementById(elementId);
+      el.textContent = text;
+      el.style.display = text ? 'block' : 'none';
+      if (elementId === 'message') document.getElementById('error').style.display = 'none';
+      if (elementId === 'error') document.getElementById('message').style.display = 'none';
+    }
+
     async function sendMagicLink() {
       const email = document.getElementById('email').value.trim();
       const btn = document.getElementById('loginBtn');
-      
-      document.getElementById('error').textContent = '';
-      document.getElementById('message').textContent = '';
+
+      showMessage('error', '');
+      showMessage('message', '');
 
       if (!email || !validateEmail(email)) {
-        document.getElementById('error').textContent = 'Please enter a valid email';
+        showMessage('error', 'Please enter a valid email address');
         return;
       }
 
       btn.disabled = true;
+      const originalText = btn.textContent;
       btn.textContent = 'Sending...';
 
       try {
@@ -54,16 +208,20 @@
         });
 
         if (error) {
-          document.getElementById('error').textContent = error.message;
+          if (error.message.includes('rate limit')) {
+            showMessage('error', 'Too many attempts. Wait 1 minute and try again.');
+          } else {
+            showMessage('error', error.message);
+          }
         } else {
-          document.getElementById('message').textContent = 'Check your email!';
+          showMessage('message', 'Check your email for the magic link!');
           document.getElementById('email').value = '';
         }
       } catch (err) {
-        document.getElementById('error').textContent = 'Error sending link. Try again.';
+        showMessage('error', 'Error sending link. Try again.');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Send Magic Link';
+        btn.textContent = originalText;
       }
     }
 
