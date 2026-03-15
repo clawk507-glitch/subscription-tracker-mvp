@@ -102,6 +102,15 @@
       color: var(--snip-light);
     }
 
+    .snip-total-small {
+      font-family: 'Geist Mono', monospace;
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+      color: var(--snip-black);
+      margin-top: 0.25rem;
+    }
+
     .snip-btn {
       display: inline-flex;
       align-items: center;
@@ -330,6 +339,16 @@
           <span id="total">0.00€</span>
         </div>
         <p class="snip-total-meta" id="total-meta">0 active subscriptions</p>
+
+        <div class="snip-label mt-4">Weekly Spend</div>
+        <div class="snip-total-small">
+          <span id="total-weekly">0.00€</span>
+        </div>
+
+        <div class="snip-label mt-4">Annual Spend</div>
+        <div class="snip-total-small">
+          <span id="total-annual">0.00€</span>
+        </div>
       </div>
 
       <!-- Add Subscription -->
@@ -341,6 +360,14 @@
           placeholder="Netflix, Spotify, etc." 
           class="snip-input"
           autocomplete="off">
+        <select id="category" class="snip-input" style="margin-top: 0.75rem;">
+            <option value="">Select Category</option>
+            <option value="Streaming">Streaming</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Software">Software</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+        </select>
         <div class="snip-form-row">
           <input 
             type="number" 
@@ -375,7 +402,7 @@
   <script>
     const db = supabase.createClient(
       'https://nqzxdusspiuxwbtaqtay.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xenhkdXNzcGl1eHdidGFxdGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDQ0NTYsImV4cCI6MjA4ODkyMDQ1Nn0.nwptjzr5yn_yTBMUQ_lGMktpsjQ8SLlWTA-ZIblKrMU'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xenhkdXNzcGl1eHvidGFxdGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDQ0NTYsImV4cCI6MjA4ODkyMDQ1Nn0.nwptjzr5yn_yTBMUQ_lGMktpsjQ8SLlWTA-ZIblKrMU'
     );
     let currentUser = null;
 
@@ -400,6 +427,7 @@
     async function addSub() {
       const name = document.getElementById('name').value.trim();
       const price = parseFloat(document.getElementById('price').value);
+      const category = document.getElementById('category').value; // Obtener la categoría
       const btn = document.getElementById('addBtn');
       const errorEl = document.getElementById('addError');
 
@@ -415,13 +443,15 @@
         return;
       }
 
+      // La categoría puede ser vacía, no es un campo obligatorio en este MVP
+
       btn.disabled = true;
       const originalText = btn.textContent;
       btn.textContent = 'Adding...';
 
       try {
         const { error } = await db.from('subscriptions').insert([
-          { user_id: currentUser.id, name, price }
+          { user_id: currentUser.id, name, price, category } // Incluir la categoría
         ]);
 
         if (error) {
@@ -429,6 +459,7 @@
         } else {
           document.getElementById('name').value = '';
           document.getElementById('price').value = '';
+          document.getElementById('category').value = ''; // Limpiar la categoría después de añadir
           await loadSubs();
         }
       } catch (err) {
@@ -437,6 +468,78 @@
         btn.disabled = false;
         btn.textContent = originalText;
       }
+    }
+
+    async function updateSub(element) {
+      const id = element.dataset.id;
+      const field = element.dataset.field;
+      let value = element.innerText.trim();
+      const errorEl = document.getElementById('addError'); // Reutilizamos el mismo error para ser más concisos
+
+      errorEl.textContent = ''; // Limpiar errores previos
+
+        // Guardar el valor original antes de cualquier modificación para poder revertir
+        if (!element.dataset.originalValue) {
+            element.dataset.originalValue = (field === 'price') ? parseFloat(element.innerText).toFixed(2) : element.innerText;
+        }
+
+        // Validar el valor antes de actualizar
+        if (field === 'price') {
+            const numericValue = parseFloat(value);
+            if (isNaN(numericValue) || numericValue <= 0) {
+                errorEl.textContent = 'El precio debe ser un número positivo.';
+                element.innerText = element.dataset.originalValue + '€ / month'; // Volver al valor original y añadir €
+                return;
+            }
+            value = numericValue.toFixed(2); // Asegurar formato de moneda
+            element.innerText = value + '€ / month'; // Actualizamos el display INMEDIATAMENTE
+        } else if (field === 'name') {
+            if (!value) {
+                errorEl.textContent = 'El nombre de la suscripción no puede estar vacío.';
+                element.innerText = element.dataset.originalValue; // Volver al valor original
+                return;
+            }
+        } else if (field === 'category') {
+            // Para la categoría, permitimos valor vacío o cualquier texto
+            // No necesitamos validación numérica ni formato especial
+        } else {
+            // Campo desconocido, no hacer nada
+            return;
+        }
+
+        // Si el valor no cambió, no hacer nada
+        if (value === ((field === 'price') ? parseFloat(element.dataset.originalValue).toFixed(2) : element.dataset.originalValue)) {
+            // Asegurarse que el display sea el correcto si no hay cambio (precio podría haber perdido € / month o categoría)
+            if (field === 'price') element.innerText = value + '€ / month';
+            delete element.dataset.originalValue; // Limpiar el valor original
+            return;
+        }
+        
+        try {
+            const { error } = await db.from('subscriptions')
+                .update({ [field]: value || null }) // Si el valor es vacío, guardar como NULL en la BD
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error updating subscription:', error);
+                errorEl.textContent = 'Error al guardar el cambio.';
+                element.innerText = element.dataset.originalValue; // Revertir en caso de error
+                if (field === 'price') element.innerText += '€ / month';
+            } else {
+                // Actualizar el total si se modificó el precio
+                if (field === 'price') {
+                    await loadSubs(); // Recargar para actualizar el total
+                }
+                // Limpiar el valor original para la próxima edición
+                delete element.dataset.originalValue; 
+                element.blur(); // Quitar foco después de éxito
+            }
+        } catch (err) {
+            console.error('Error updating subscription:', err);
+            errorEl.textContent = 'Error de red o servidor.';
+            element.innerText = element.dataset.originalValue; // Revertir en caso de error
+            if (field === 'price') element.innerText += '€ / month';
+        }
     }
 
     async function loadSubs() {
@@ -453,7 +556,7 @@
           return;
         }
 
-        let total = 0;
+        let totalMonthly = 0; // Cambiado a totalMonthly
         let html = '';
 
         if (data.length === 0) {
@@ -462,12 +565,14 @@
         } else {
           document.getElementById('empty').style.display = 'none';
           data.forEach(sub => {
-            total += sub.price;
+            totalMonthly += sub.price; // Sumar al total mensual
+            const originalPrice = sub.price.toFixed(2);
             html += `
               <div class="snip-row">
                 <div class="snip-row-content">
-                  <div class="snip-row-name" contenteditable="true" data-id="${sub.id}" data-field="name" onblur="updateSub(this)" onkeydown="if(event.keyCode===13) { event.preventDefault(); this.blur(); }">${escapeHtml(sub.name)}</div>
-                  <div class="snip-row-meta" contenteditable="true" data-id="${sub.id}" data-field="price" onblur="updateSub(this)" onkeydown="if(event.keyCode===13) { event.preventDefault(); this.blur(); }">${sub.price.toFixed(2)}€ / month</div>
+                  <div class="snip-row-name" contenteditable="true" data-id="${sub.id}" data-field="name" onblur="updateSub(this)" onkeydown="if(event.keyCode===13) { event.preventDefault(); this.blur(); }" data-original-value="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</div>
+                  <div class="snip-row-meta" contenteditable="true" data-id="${sub.id}" data-field="price" onblur="updateSub(this)" onkeydown="if(event.keyCode===13) { event.preventDefault(); this.blur(); }" data-original-value="${originalPrice}">${originalPrice}€ / month</div>
+                  <div class="snip-row-meta" contenteditable="true" data-id="${sub.id}" data-field="category" onblur="updateSub(this)" onkeydown="if(event.keyCode===13) { event.preventDefault(); this.blur(); }" data-original-value="${escapeHtml(sub.category || 'Other')}">${escapeHtml(sub.category || 'Other')}</div>
                 </div>
                 <button 
                   onclick="deleteSub('${sub.id}')" 
@@ -481,82 +586,17 @@
           document.getElementById('list').innerHTML = html;
         }
 
-        document.getElementById('total').textContent = total.toFixed(2) + '€';
+        // Cálculos para gasto semanal y anual
+        const totalWeekly = (totalMonthly / 4.33).toFixed(2);
+        const totalAnnual = (totalMonthly * 12).toFixed(2);
+
+        document.getElementById('total').textContent = totalMonthly.toFixed(2) + '€';
+        document.getElementById('total-weekly').textContent = totalWeekly + '€';
+        document.getElementById('total-annual').textContent = totalAnnual + '€';
         document.getElementById('total-meta').textContent = data.length + ' active subscription' + (data.length !== 1 ? 's' : '');
       } catch (err) {
         console.error('Load error:', err);
         document.getElementById('empty').textContent = 'Error loading subscriptions';
-      }
-    }
-
-
-    async function updateSub(element) {
-      const id = element.dataset.id;
-      const field = element.dataset.field;
-      let value = element.innerText.trim();
-      const errorEl = document.getElementById('addError'); // Reutilizamos el mismo error para ser más concisos
-
-      errorEl.textContent = ''; // Limpiar errores previos
-
-      // Guardar el valor original antes de cualquier modificación para poder revertir
-      if (!element.dataset.originalValue) {
-        element.dataset.originalValue = (field === 'price') ? parseFloat(element.innerText).toFixed(2) : element.innerText;
-      }
-
-      // Validar el valor antes de actualizar
-      if (field === 'price') {
-        const numericValue = parseFloat(value);
-        if (isNaN(numericValue) || numericValue <= 0) {
-          errorEl.textContent = 'El precio debe ser un número positivo.';
-          element.innerText = element.dataset.originalValue + '€ / month'; // Volver al valor original y añadir €
-          return;
-        }
-        value = numericValue.toFixed(2); // Asegurar formato de moneda
-        // Actualizamos el display INMEDIATAMENTE para que el usuario vea el cambio
-        element.innerText = value + '€ / month';
-      } else if (field === 'name') {
-        if (!value) {
-          errorEl.textContent = 'El nombre de la suscripción no puede estar vacío.';
-          element.innerText = element.dataset.originalValue; // Volver al valor original
-          return;
-        }
-      } else {
-        // Campo desconocido, no hacer nada
-        return;
-      }
-
-      // Si el valor no cambió, no hacer nada
-      if (value === ((field === 'price') ? parseFloat(element.dataset.originalValue).toFixed(2) : element.dataset.originalValue)) {
-        // Asegurarse que el display sea el correcto si no hay cambio (precio podría haber perdido € / month)
-        if (field === 'price') element.innerText = value + '€ / month';
-        delete element.dataset.originalValue; // Limpiar el valor original
-        return;
-      }
-      
-      try {
-        const { error } = await db.from('subscriptions')
-          .update({ [field]: value })
-          .eq('id', id);
-
-        if (error) {
-          console.error('Error updating subscription:', error);
-          errorEl.textContent = 'Error al guardar el cambio.';
-          element.innerText = element.dataset.originalValue; // Revertir en caso de error
-          if (field === 'price') element.innerText += '€ / month';
-        } else {
-          // Actualizar el total si se modificó el precio
-          if (field === 'price') {
-            await loadSubs(); // Recargar para actualizar el total
-          }
-          // Limpiar el valor original para la próxima edición
-          delete element.dataset.originalValue; 
-          element.blur(); // Quitar foco después de éxito
-        }
-      } catch (err) {
-        console.error('Error updating subscription:', err);
-        errorEl.textContent = 'Error de red o servidor.';
-        element.innerText = element.dataset.originalValue; // Revertir en caso de error
-        if (field === 'price') element.innerText += '€ / month';
       }
     }
 
@@ -606,6 +646,3 @@
     }
 
     init();
-  </script>
-</body>
-</html>
