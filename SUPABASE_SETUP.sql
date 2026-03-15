@@ -4,6 +4,7 @@ CREATE TABLE subscriptions (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   price DECIMAL(10,2) NOT NULL CHECK (price > 0),
+  category TEXT NULL,
   created_at TIMESTAMP DEFAULT now()
 );
 
